@@ -10,6 +10,14 @@ export interface Message {
   read: boolean
 }
 
+export interface User {
+  id: string
+  name: string
+  role: "company" | "worker"
+  company?: string
+  department?: string
+}
+
 const MESSAGES_KEY = "hr_messages"
 
 export function initializeMockMessages() {
@@ -90,4 +98,46 @@ export function deleteMessage(messageId: string) {
   const messages = getMessages()
   const filtered = messages.filter((msg) => msg.id !== messageId)
   localStorage.setItem(MESSAGES_KEY, JSON.stringify(filtered))
+}
+
+// 회원 검색 관련 함수들
+export function getMockUsers(): User[] {
+  return [
+    { id: "admin", name: "관리자", role: "company", company: "관리자" },
+    { id: "vdream", name: "vdream", role: "company", company: "브이드림" },
+    { id: "user-001", name: "강유신", role: "worker", company: "테크 컴퍼니", department: "개발팀" },
+    { id: "user-002", name: "양우석", role: "worker", company: "테크 컴퍼니", department: "개발팀" },
+    { id: "user-003", name: "정재훈", role: "worker", company: "테크 컴퍼니", department: "개발팀" },
+    { id: "user-004", name: "김민수", role: "worker", company: "테크 컴퍼니", department: "개발팀" },
+    { id: "user-005", name: "박지영", role: "worker", company: "테크 컴퍼니", department: "마케팅팀" },
+    { id: "user-006", name: "이준호", role: "worker", company: "테크 컴퍼니", department: "디자인팀" },
+    { id: "user-007", name: "최수진", role: "worker", company: "테크 컴퍼니", department: "개발팀" },
+    { id: "user-008", name: "정민호", role: "worker", company: "테크 컴퍼니", department: "개발팀" },
+    { id: "user-009", name: "홍길동", role: "worker", company: "테크 컴퍼니", department: "인사팀" },
+    { id: "user-010", name: "김영희", role: "worker", company: "테크 컴퍼니", department: "마케팅팀" },
+    { id: "test01", name: "김근로", role: "worker", company: "테크 컴퍼니", department: "개발팀" },
+    { id: "test02", name: "박인사", role: "company", company: "테크 컴퍼니", department: "인사팀" },
+  ]
+}
+
+export function searchUsers(query: string, roleFilter?: "all" | "company" | "worker"): User[] {
+  const users = getMockUsers()
+  let filtered = users
+
+  // 역할 필터 적용
+  if (roleFilter && roleFilter !== "all") {
+    filtered = filtered.filter(user => user.role === roleFilter)
+  }
+
+  // 검색어 필터 적용
+  if (query.trim()) {
+    const searchTerm = query.toLowerCase()
+    filtered = filtered.filter(user => 
+      user.name.toLowerCase().includes(searchTerm) || 
+      user.id.toLowerCase().includes(searchTerm) ||
+      (user.company && user.company.toLowerCase().includes(searchTerm))
+    )
+  }
+
+  return filtered
 }

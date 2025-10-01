@@ -17,9 +17,11 @@ import {
   markAsRead,
   deleteMessage,
   initializeMockMessages,
+  searchUsers,
   type Message,
+  type User,
 } from "@/lib/messages"
-import { MessageSquare, Send, Trash2, Mail, MailOpen } from "lucide-react"
+import { MessageSquare, Send, Trash2, Mail, MailOpen, Search, X, ChevronDown, User } from "lucide-react"
 import { AccessibilityToolbar } from "@/components/accessibility/accessibility-toolbar"
 
 export default function WorkerMessagesPage() {
@@ -28,7 +30,11 @@ export default function WorkerMessagesPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
   const [isComposeOpen, setIsComposeOpen] = useState(false)
-  const [newMessage, setNewMessage] = useState({ subject: "", content: "" })
+  const [newMessage, setNewMessage] = useState({ subject: "", content: "", receiverId: "", receiverName: "" })
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [roleFilter, setRoleFilter] = useState<"all" | "company" | "worker">("all")
+  const [searchResults, setSearchResults] = useState<User[]>([])
 
   useEffect(() => {
     if (!user) {
@@ -52,20 +58,42 @@ export default function WorkerMessagesPage() {
   }
 
   const handleSendMessage = () => {
-    if (!user || !newMessage.subject || !newMessage.content) return
+    if (!user || !newMessage.subject || !newMessage.content || !newMessage.receiverId) return
 
     sendMessage({
       senderId: user.id,
       senderName: user.name,
-      receiverId: "company1",
-      receiverName: "인사팀",
+      receiverId: newMessage.receiverId,
+      receiverName: newMessage.receiverName,
       subject: newMessage.subject,
       content: newMessage.content,
     })
 
-    setNewMessage({ subject: "", content: "" })
+    setNewMessage({ subject: "", content: "", receiverId: "", receiverName: "" })
     setIsComposeOpen(false)
     reloadMessages()
+  }
+
+  const handleSearch = () => {
+    const results = searchUsers(searchQuery, roleFilter)
+    setSearchResults(results)
+  }
+
+  const handleSelectUser = (selectedUser: User) => {
+    setNewMessage({
+      ...newMessage,
+      receiverId: selectedUser.id,
+      receiverName: selectedUser.name,
+    })
+    setIsSearchOpen(false)
+    setSearchQuery("")
+    setSearchResults([])
+  }
+
+  const handleResetSearch = () => {
+    setSearchQuery("")
+    setRoleFilter("all")
+    setSearchResults([])
   }
 
   const handleMessageClick = (message: Message) => {
@@ -111,7 +139,22 @@ export default function WorkerMessagesPage() {
               <div className="space-y-4 mt-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">받는 사람</label>
-                  <Input value="인사팀" disabled />
+                  <div className="flex gap-2">
+                    <Input 
+                      value={newMessage.receiverName || ""} 
+                      placeholder="받는 사람을 검색하세요"
+                      readOnly
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => setIsSearchOpen(true)}
+                      className="bg-[#22ccb7] hover:bg-[#1ab5a3] text-white"
+                    >
+                      <Search className="w-4 h-4 mr-1" />
+                      회원검색
+                    </Button>
+                  </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">제목</label>
@@ -138,6 +181,124 @@ export default function WorkerMessagesPage() {
                   <Send className="w-4 h-4 mr-2" />
                   보내기
                 </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* 회원 검색 모달 */}
+          <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center justify-between">
+                  회원검색
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsSearchOpen(false)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4 mt-4">
+                {/* 검색 입력 */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="이름 또는 아이디를 입력하세요."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={handleSearch}
+                    className="bg-[#22ccb7] hover:bg-[#1ab5a3] text-white"
+                  >
+                    <Search className="w-4 h-4 mr-1" />
+                    회원검색
+                  </Button>
+                  <Button
+                    onClick={handleResetSearch}
+                    variant="outline"
+                    className="bg-transparent"
+                  >
+                    초기화
+                  </Button>
+                </div>
+
+                {/* 필터 옵션 */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4">
+                    <label className="text-sm font-medium">전체선택</label>
+                    <input type="checkbox" className="rounded" />
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <label className="text-sm font-medium">역할:</label>
+                    <div className="flex gap-2">
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="all"
+                          checked={roleFilter === "all"}
+                          onChange={(e) => setRoleFilter(e.target.value as "all")}
+                        />
+                        <span className="text-sm">전체</span>
+                      </label>
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="company"
+                          checked={roleFilter === "company"}
+                          onChange={(e) => setRoleFilter(e.target.value as "company")}
+                        />
+                        <span className="text-sm">기업</span>
+                      </label>
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="worker"
+                          checked={roleFilter === "worker"}
+                          onChange={(e) => setRoleFilter(e.target.value as "worker")}
+                        />
+                        <span className="text-sm">근로자</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 검색 결과 */}
+                <div className="max-h-60 overflow-y-auto border rounded-lg">
+                  {searchResults.length > 0 ? (
+                    <div className="space-y-1 p-2">
+                      {searchResults.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => handleSelectUser(user)}
+                          className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer rounded"
+                        >
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-gray-500" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{user.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {user.role === "company" ? user.company : `${user.company} ${user.department}`}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center text-gray-500">
+                      <p className="text-sm">검색 결과가 없습니다</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </DialogContent>
           </Dialog>

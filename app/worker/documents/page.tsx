@@ -92,7 +92,7 @@ export default function WorkerDocumentsPage() {
             documents.map((doc) => (
               <Card
                 key={doc.id}
-                className="border-gray-200 hover:border-[#22ccb7]/30 hover:shadow-md transition-all duration-200"
+                className="border-gray-200 hover:border-[#22ccb7]/30 hover:shadow-md transition-all duration-200 py-0"
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -111,18 +111,18 @@ export default function WorkerDocumentsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge(doc.status)}
+                    <div className="flex flex-col items-center gap-2">
                       {doc.canDownload && (
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-transparent"
+                        variant="outline"
+                        size="sm"
+                        className="bg-transparent"
                         >
                           <Download className="w-4 h-4 mr-1" />
                           다운로드
                         </Button>
                       )}
+                      {getStatusBadge(doc.status)}
                     </div>
                   </div>
 
@@ -157,16 +157,6 @@ export default function WorkerDocumentsPage() {
                         </Button>
                       )}
                     </div>
-                    {/* <div className="text-sm text-muted-foreground">
-                      {doc.canDownload ? (
-                        <span className="flex items-center gap-1">
-                          <Download className="w-4 h-4" />
-                          다운로드 가능
-                        </span>
-                      ) : (
-                        <span>-</span>
-                      )}
-                    </div> */}
                   </div>
                 </CardContent>
               </Card>
