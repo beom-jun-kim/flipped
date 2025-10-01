@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, getWorkers, type User } from "@/lib/auth"
 import { CompanyHeader } from "@/components/company/company-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,8 +24,9 @@ export default function CompanyTasksPage() {
   const [description, setDescription] = useState("")
   const [priority, setPriority] = useState<Task["priority"]>("medium")
   const [dueDate, setDueDate] = useState("")
-  const [assignedTo] = useState("test01")
-  const [assignedToName] = useState("김근로")
+  const [assignedTo, setAssignedTo] = useState("")
+  const [assignedToName, setAssignedToName] = useState("")
+  const [workers, setWorkers] = useState<User[]>([])
 
   useEffect(() => {
     if (!user) {
@@ -39,6 +40,9 @@ export default function CompanyTasksPage() {
 
     const allTasks = getAllTasks()
     setTasks(allTasks)
+    
+    const workersList = getWorkers()
+    setWorkers(workersList)
   }, [user])
 
   const reloadTasks = () => {
@@ -46,17 +50,28 @@ export default function CompanyTasksPage() {
     setTasks(allTasks)
   }
 
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user || !assignedTo || !assignedToName) return
 
     createTask(assignedTo, assignedToName, user.id, user.name, title, description, priority, dueDate)
     setTitle("")
     setDescription("")
     setPriority("medium")
     setDueDate("")
+    setAssignedTo("")
+    setAssignedToName("")
     setIsCreating(false)
     reloadTasks()
+  }
+
+  const handleWorkerSelect = (workerId: string) => {
+    const selectedWorker = workers.find(worker => worker.id === workerId)
+    if (selectedWorker) {
+      setAssignedTo(selectedWorker.id)
+      setAssignedToName(selectedWorker.name)
+    }
   }
 
   if (!user) return null
@@ -65,7 +80,7 @@ export default function CompanyTasksPage() {
     <div className="min-h-screen bg-gray-50">
       <CompanyHeader />
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -82,14 +97,40 @@ export default function CompanyTasksPage() {
 
         {/* Create Form */}
         {isCreating && (
-          <Card className="border-[#22ccb7]/20">
-            <CardHeader>
-              <CardTitle className="text-lg">새 업무 지시</CardTitle>
+          <Card className="border-gray-200 bg-white gap-0">
+            <CardHeader className="border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-[#22ccb7]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Briefcase className="w-6 h-6 text-[#22ccb7]" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl mb-2">새 업무 지시</CardTitle>
+                  <p className="text-sm text-muted-foreground">직원에게 업무를 지시하세요</p>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">업무 제목</Label>
+            <CardContent className="p-6 space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* 담당자 선택 */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-gray-800">담당자</h3>
+                  <Select value={assignedTo} onValueChange={handleWorkerSelect} required>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="근로자를 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workers.map((worker) => (
+                        <SelectItem key={worker.id} value={worker.id}>
+                          {worker.name} ({worker.department} - {worker.position})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 업무 제목 */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-gray-800">업무 제목</h3>
                   <Input
                     id="title"
                     placeholder="업무 제목을 입력하세요"
@@ -100,46 +141,23 @@ export default function CompanyTasksPage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">업무 설명</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="업무 내용을 상세히 작성하세요"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    required
-                    rows={5}
-                  />
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="priority">우선순위</Label>
-                    <Select value={priority} onValueChange={(value) => setPriority(value as Task["priority"])}>
-                      <SelectTrigger id="priority" className="h-12">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="high">높음</SelectItem>
-                        <SelectItem value="medium">보통</SelectItem>
-                        <SelectItem value="low">낮음</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dueDate">마감일</Label>
-                    <Input
-                      id="dueDate"
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
+                {/* 업무 내용 */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-gray-800">업무 내용</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <Textarea
+                      id="description"
+                      placeholder="업무 내용을 상세히 작성하세요"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                       required
-                      className="h-12"
+                      rows={6}
+                      className="bg-transparent border-none resize-none focus:ring-0 focusring-offset-0 p-0"
                     />
                   </div>
                 </div>
 
+                {/* 버튼 */}
                 <div className="flex gap-2">
                   <Button type="submit" className="flex-1 bg-[#22ccb7] hover:bg-[#1ab5a3]">
                     지시하기
@@ -153,6 +171,8 @@ export default function CompanyTasksPage() {
                       setDescription("")
                       setPriority("medium")
                       setDueDate("")
+                      setAssignedTo("")
+                      setAssignedToName("")
                     }}
                     className="flex-1 bg-transparent"
                   >
@@ -168,8 +188,12 @@ export default function CompanyTasksPage() {
         <div className="space-y-4">
           {tasks.length > 0 ? (
             tasks.map((task) => (
-              <Card key={task.id} className="border-gray-200">
-                <CardContent className="p-6">
+              <Card 
+                key={task.id} 
+                className="border-gray-200 cursor-pointer hover:border-[#22ccb7]/30 hover:shadow-md transition-all duration-200"
+                onClick={() => router.push(`/company/tasks/${task.id}`)}
+              >
+                <CardContent>
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 bg-[#22ccb7]/10 rounded-lg flex items-center justify-center flex-shrink-0">
                       <Briefcase className="w-5 h-5 text-[#22ccb7]" />
@@ -178,17 +202,12 @@ export default function CompanyTasksPage() {
                       <h3 className="font-semibold text-lg mb-2">{task.title}</h3>
                       <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
                       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                        <span>담당자: {task.assignedToName}</span>
+                        <span>근로자 : {task.assignedToName}</span>
                         <span>•</span>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4 text-[#22ccb7]" />
-                          <span>마감: {task.dueDate}</span>
+                          <span>지시일: {task.dueDate}</span>
                         </div>
-                        <span>•</span>
-                        <span>
-                          상태:{" "}
-                          {task.status === "pending" ? "대기 중" : task.status === "in-progress" ? "진행 중" : "완료"}
-                        </span>
                       </div>
                     </div>
                   </div>

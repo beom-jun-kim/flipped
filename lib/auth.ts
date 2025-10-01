@@ -72,6 +72,69 @@ export function getCurrentUser(): User | null {
   return null
 }
 
+export function getWorkers(): User[] {
+  // 테스트용 근로자 목록 (실제로는 서버에서 가져와야 함)
+  const workers: User[] = [
+    {
+      id: "test01",
+      username: "test01",
+      role: "worker",
+      name: "김근로",
+      company: "테크 컴퍼니",
+      department: "개발팀",
+      position: "사원",
+      disability: "시각장애",
+      joinDate: "2024-01-15",
+    },
+    {
+      id: "worker001",
+      username: "worker001",
+      role: "worker",
+      name: "이개발",
+      company: "테크 컴퍼니",
+      department: "개발팀",
+      position: "대리",
+      disability: "지체장애",
+      joinDate: "2023-06-01",
+    },
+    {
+      id: "worker002",
+      username: "worker002",
+      role: "worker",
+      name: "박디자인",
+      company: "테크 컴퍼니",
+      department: "디자인팀",
+      position: "사원",
+      disability: "청각장애",
+      joinDate: "2024-02-01",
+    },
+    {
+      id: "worker003",
+      username: "worker003",
+      role: "worker",
+      name: "최마케팅",
+      company: "테크 컴퍼니",
+      department: "마케팅팀",
+      position: "대리",
+      disability: "시각장애",
+      joinDate: "2023-09-15",
+    },
+    {
+      id: "worker004",
+      username: "worker004",
+      role: "worker",
+      name: "정운영",
+      company: "테크 컴퍼니",
+      department: "운영팀",
+      position: "사원",
+      disability: "지체장애",
+      joinDate: "2024-01-01",
+    },
+  ]
+  
+  return workers
+}
+
 export function register(
   username: string,
   password: string,

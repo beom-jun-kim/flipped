@@ -7,7 +7,7 @@ import { CompanyHeader } from "@/components/company/company-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { getAllLeaveRequests, updateLeaveStatus, type LeaveRequest } from "@/lib/leave"
+import { getAllLeaveRequests, updateLeaveStatus, initializeMockLeaveRequests, type LeaveRequest } from "@/lib/leave"
 import { Calendar, Clock, CheckCircle2, XCircle, Check, X } from "lucide-react"
 
 export default function CompanyLeavePage() {
@@ -25,6 +25,7 @@ export default function CompanyLeavePage() {
       return
     }
 
+    initializeMockLeaveRequests()
     const allRequests = getAllLeaveRequests()
     setRequests(allRequests)
   }, [user])
@@ -44,22 +45,22 @@ export default function CompanyLeavePage() {
     switch (status) {
       case "pending":
         return (
-          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
-            <Clock className="w-3 h-3 mr-1 text-yellow-600" />
+          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
+            <Clock className="w-3 h-3 mr-1" />
             대기 중
           </Badge>
         )
       case "approved":
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-            <CheckCircle2 className="w-3 h-3 mr-1 text-green-600" />
+          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
+            <CheckCircle2 className="w-3 h-3 mr-1" />
             승인됨
           </Badge>
         )
       case "rejected":
         return (
-          <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
-            <XCircle className="w-3 h-3 mr-1 text-red-600" />
+          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
+            <XCircle className="w-3 h-3 mr-1" />
             반려됨
           </Badge>
         )
@@ -85,20 +86,22 @@ export default function CompanyLeavePage() {
     <div className="min-h-screen bg-gray-50">
       <CompanyHeader />
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
-        <div>
-          <h2 className="text-2xl font-bold mb-2">연차 관리</h2>
-          <p className="text-muted-foreground">직원들의 연차 신청을 검토하고 승인하세요</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">연차 관리</h2>
+            <p className="text-muted-foreground">직원들의 연차 신청을 검토하고 승인하세요</p>
+          </div>
         </div>
 
         {/* Statistics */}
         <div className="grid sm:grid-cols-3 gap-4">
           <Card className="border-gray-200">
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-yellow-600" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#22ccb7]/10">
+                  <Clock className="w-5 h-5 text-[#22ccb7]" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">승인 대기</p>
@@ -109,10 +112,10 @@ export default function CompanyLeavePage() {
           </Card>
 
           <Card className="border-gray-200">
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 bg-[#22ccb7]/10 rounded-lg flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-[#22ccb7]" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">승인됨</p>
@@ -123,10 +126,10 @@ export default function CompanyLeavePage() {
           </Card>
 
           <Card className="border-gray-200">
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <XCircle className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#22ccb7]/10">
+                  <XCircle className="w-5 h-5 text-[#22ccb7]" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">반려됨</p>
@@ -173,7 +176,7 @@ export default function CompanyLeavePage() {
                       <div className="flex gap-2 pt-3 border-t">
                         <Button
                           onClick={() => handleReview(request.id, "approved")}
-                          className="flex-1 bg-green-600 hover:bg-green-700"
+                          className="flex-1 bg-[#22ccb7] hover:bg-[#1ab5a3]"
                         >
                           <Check className="w-4 h-4 mr-1" />
                           승인
@@ -181,7 +184,7 @@ export default function CompanyLeavePage() {
                         <Button
                           onClick={() => handleReview(request.id, "rejected")}
                           variant="outline"
-                          className="flex-1 bg-transparent text-red-600 border-red-200 hover:bg-red-50"
+                          className="flex-1 bg-transparent text-[#22ccb7] border-[#22ccb7] hover:bg-[#22ccb7]/10"
                         >
                           <X className="w-4 h-4 mr-1" />
                           반려

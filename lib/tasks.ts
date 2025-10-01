@@ -83,6 +83,13 @@ export function getAllTasks(): Task[] {
   return tasks.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
+export function deleteTask(taskId: string): void {
+  if (typeof window === "undefined") return
+  const tasks = getTasks()
+  const filteredTasks = tasks.filter((t) => t.id !== taskId)
+  localStorage.setItem(TASKS_KEY, JSON.stringify(filteredTasks))
+}
+
 // 더미 데이터 초기화 함수
 export function initializeMockTasks(): void {
   if (typeof window === "undefined") return
