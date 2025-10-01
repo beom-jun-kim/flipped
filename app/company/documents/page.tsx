@@ -6,18 +6,18 @@ import { getCurrentUser } from "@/lib/auth"
 import { CompanyHeader } from "@/components/company/company-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { getAllDocuments, reviewDocument, type Document } from "@/lib/documents"
-import { FileText, Clock, CheckCircle2, XCircle, Check, X } from "lucide-react"
+import { getAllDocuments, type Document } from "@/lib/documents"
+import { getWorkers, type User } from "@/lib/auth"
+import { FileText, CheckCircle2, Download, ChevronLeft, ChevronRight } from "lucide-react"
 
 export default function CompanyDocumentsPage() {
   const router = useRouter()
   const user = useMemo(() => getCurrentUser(), [])
   const [documents, setDocuments] = useState<Document[]>([])
-  const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
-  const [reviewNote, setReviewNote] = useState("")
+  const [workers, setWorkers] = useState<User[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     if (!user) {
@@ -31,6 +31,9 @@ export default function CompanyDocumentsPage() {
 
     const allDocs = getAllDocuments()
     setDocuments(allDocs)
+    
+    const workersList = getWorkers()
+    setWorkers(workersList)
   }, [user])
 
   const reloadDocuments = () => {
@@ -38,35 +41,50 @@ export default function CompanyDocumentsPage() {
     setDocuments(allDocs)
   }
 
-  const handleReview = (docId: string, status: "approved" | "rejected") => {
-    if (!user) return
-    reviewDocument(docId, status, user.name, reviewNote || undefined)
-    setReviewNote("")
-    setSelectedDoc(null)
-    reloadDocuments()
+  // 근로자별 서류 상태 계산
+  const getWorkerDocumentStatus = (workerId: string) => {
+    const workerDocs = documents.filter(doc => doc.userId === workerId)
+    if (workerDocs.length === 0) return "미등록"
+    
+    const allRegistered = workerDocs.every(doc => doc.status === "registered")
+    return allRegistered ? "등록완료" : "미등록"
   }
+
+  // 근로자별 서류 개수 계산
+  const getWorkerDocumentCount = (workerId: string) => {
+    return documents.filter(doc => doc.userId === workerId).length
+  }
+
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(workers.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedWorkers = workers.slice(startIndex, endIndex)
 
   const getStatusBadge = (status: Document["status"]) => {
     switch (status) {
-      case "pending":
+      case "unregistered":
         return (
-          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
-            <Clock className="w-3 h-3 mr-1 text-yellow-600" />
-            검토 중
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+            미등록
           </Badge>
         )
-      case "approved":
+      case "signature_completed":
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-            <CheckCircle2 className="w-3 h-3 mr-1 text-green-600" />
-            승인됨
+          <Badge className="bg-[#22ccb7] text-white hover:bg-[#22ccb7]">
+            서명완료
           </Badge>
         )
-      case "rejected":
+      case "before_signature":
         return (
-          <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
-            <XCircle className="w-3 h-3 mr-1 text-red-600" />
-            반려됨
+          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+            서명 전
+          </Badge>
+        )
+      case "registered":
+        return (
+          <Badge className="bg-[#22ccb7] text-white hover:bg-[#22ccb7]">
+            등록
           </Badge>
         )
     }
@@ -74,12 +92,16 @@ export default function CompanyDocumentsPage() {
 
   const getTypeLabel = (type: Document["type"]) => {
     switch (type) {
-      case "resume":
-        return "이력서"
-      case "certificate":
-        return "자격증"
-      case "health":
-        return "건강검진"
+      case "contract":
+        return "근로계약서"
+      case "signature":
+        return "서명"
+      case "registration":
+        return "등록"
+      case "insurance":
+        return "보험"
+      case "welfare":
+        return "복리후생"
       case "other":
         return "기타"
     }
@@ -87,162 +109,181 @@ export default function CompanyDocumentsPage() {
 
   if (!user) return null
 
-  const pendingDocs = documents.filter((d) => d.status === "pending")
+  const registeredWorkers = workers.filter(worker => getWorkerDocumentStatus(worker.id) === "등록완료")
+  const unregisteredWorkers = workers.filter(worker => getWorkerDocumentStatus(worker.id) === "미등록")
 
   return (
     <div className="min-h-screen bg-gray-50">
       <CompanyHeader />
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Header */}
         <div>
           <h2 className="text-2xl font-bold mb-2">입사서류 관리</h2>
-          <p className="text-muted-foreground">직원들이 제출한 서류를 검토하고 승인하세요</p>
+          <p className="text-muted-foreground">직원들의 입사서류를 확인하고 관리하세요</p>
         </div>
 
         {/* Statistics */}
         <div className="grid sm:grid-cols-3 gap-4">
           <Card className="border-gray-200">
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-yellow-600" />
+                <div className="w-10 h-10 bg-[#22ccb7]/10 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-[#22ccb7]" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">검토 대기</p>
-                  <p className="text-2xl font-bold">{pendingDocs.length}건</p>
+                  <p className="text-sm text-muted-foreground">전체 근로자</p>
+                  <p className="text-2xl font-bold">{workers.length}명</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-gray-200">
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 bg-[#22ccb7]/10 rounded-lg flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-[#22ccb7]" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">승인됨</p>
-                  <p className="text-2xl font-bold">{documents.filter((d) => d.status === "approved").length}건</p>
+                  <p className="text-sm text-muted-foreground">등록완료</p>
+                  <p className="text-2xl font-bold">{registeredWorkers.length}명</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-gray-200">
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <XCircle className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 bg-[#22ccb7]/10 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-[#22ccb7]" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">반려됨</p>
-                  <p className="text-2xl font-bold">{documents.filter((d) => d.status === "rejected").length}건</p>
+                  <p className="text-sm text-muted-foreground">미등록</p>
+                  <p className="text-2xl font-bold">{unregisteredWorkers.length}명</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Documents List */}
-        <Card className="border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-lg">제출된 서류</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {documents.length > 0 ? (
-                documents.map((doc) => (
-                  <div key={doc.id} className="p-4 border rounded-lg">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-start gap-3 flex-1">
+        {/* Workers List */}
+        <div className="space-y-4">
+          {paginatedWorkers.length > 0 ? (
+            paginatedWorkers.map((worker) => {
+              const status = getWorkerDocumentStatus(worker.id)
+              const docCount = getWorkerDocumentCount(worker.id)
+              
+              return (
+                <Card
+                  key={worker.id}
+                  className="border-gray-200 cursor-pointer hover:border-[#22ccb7]/30 hover:shadow-md transition-all duration-200"
+                  onClick={() => router.push(`/company/documents/${worker.id}`)}
+                >
+                  <CardContent>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3 flex-1">
                         <div className="w-10 h-10 bg-[#22ccb7]/10 rounded-lg flex items-center justify-center flex-shrink-0">
                           <FileText className="w-5 h-5 text-[#22ccb7]" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold mb-1">{doc.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-1">
-                            {doc.userName} · {getTypeLabel(doc.type)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            제출일: {new Date(doc.uploadedAt).toLocaleDateString("ko-KR")}
-                          </p>
+                          <h3 className="font-semibold text-lg">{worker.name}</h3>
+                          <div className="text-sm text-muted-foreground">
+                            <span>입사일: {worker.joinDate || "-"}</span>
+                          </div>
                         </div>
                       </div>
-                      {getStatusBadge(doc.status)}
-                    </div>
-
-                    {doc.status === "pending" ? (
-                      selectedDoc === doc.id ? (
-                        <div className="space-y-3 pt-3 border-t">
-                          <div className="space-y-2">
-                            <Label htmlFor={`note-${doc.id}`}>검토 의견 (선택사항)</Label>
-                            <Textarea
-                              id={`note-${doc.id}`}
-                              placeholder="검토 의견을 입력하세요"
-                              value={reviewNote}
-                              onChange={(e) => setReviewNote(e.target.value)}
-                              rows={3}
-                            />
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleReview(doc.id, "approved")}
-                              className="flex-1 bg-green-600 hover:bg-green-700"
-                            >
-                              <Check className="w-4 h-4 mr-1" />
-                              승인
-                            </Button>
-                            <Button
-                              onClick={() => handleReview(doc.id, "rejected")}
-                              className="flex-1 bg-red-600 hover:bg-red-700"
-                            >
-                              <X className="w-4 h-4 mr-1" />
-                              반려
-                            </Button>
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                setSelectedDoc(null)
-                                setReviewNote("")
-                              }}
-                              className="bg-transparent"
-                            >
-                              취소
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="pt-3 border-t">
+                      <div className="flex flex-col items-center gap-2">
+                        <Badge 
+                          className={
+                            status === "등록완료" 
+                              ? "bg-[#22ccb7] text-white hover:bg-[#22ccb7]" 
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-100"
+                          }
+                        >
+                          {status}
+                        </Badge>
+                        {status === "등록완료" && docCount > 0 && (
                           <Button
-                            onClick={() => setSelectedDoc(doc.id)}
-                            variant="outline"
-                            className="w-full bg-transparent"
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              // 다운로드 로직 구현
+                            }}
+                            className="text-[#22ccb7] hover:text-[#1ab5a3]"
                           >
-                            검토하기
+                            <Download className="w-4 h-4" />
                           </Button>
-                        </div>
-                      )
-                    ) : (
-                      <div className="pt-3 border-t space-y-2">
-                        {doc.reviewNote && (
-                          <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-xs text-muted-foreground mb-1">검토 의견</p>
-                            <p className="text-sm">{doc.reviewNote}</p>
-                          </div>
                         )}
-                        <p className="text-xs text-muted-foreground">검토자: {doc.reviewedBy}</p>
                       </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">제출된 서류가 없습니다</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })
+          ) : (
+            <Card className="border-gray-200">
+              <CardContent className="p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-muted-foreground">근로자가 없습니다</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant={currentPage === 1 ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentPage(1)}
+              className={currentPage === 1 ? "bg-[#22ccb7] hover:bg-[#1ab5a3]" : ""}
+            >
+              1
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </main>
     </div>
   )

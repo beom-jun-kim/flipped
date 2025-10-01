@@ -36,13 +36,17 @@ function getDummyDocuments(): Document[] {
 
   return [
     // 김근로 (test01) - 입사 서류 목록
+    
+    // ✅ 기업이 작성·제공해야 하는 서류 (이미 등록된 상태)
     {
       id: "doc-001",
       userId: "test01",
       userName: "김근로",
       title: "근로계약서",
       type: "contract",
-      status: "unregistered"
+      status: "registered",
+      canDownload: true,
+      registrationDate: registrationDate
     },
     {
       id: "doc-002",
@@ -80,15 +84,15 @@ function getDummyDocuments(): Document[] {
       type: "signature",
       status: "before_signature"
     },
+    
+    // ✅ 근로자가 직접 발급받아 제출해야 하는 서류 (미등록 상태)
     {
       id: "doc-006",
       userId: "test01",
       userName: "김근로",
       title: "주민등록등본",
       type: "registration",
-      status: "registered",
-      canDownload: true,
-      registrationDate: registrationDate
+      status: "unregistered"
     },
     {
       id: "doc-007",
@@ -96,9 +100,7 @@ function getDummyDocuments(): Document[] {
       userName: "김근로",
       title: "산재보험자격이력내역서",
       type: "insurance",
-      status: "registered",
-      canDownload: true,
-      registrationDate: registrationDate
+      status: "unregistered"
     },
     {
       id: "doc-008",
@@ -106,9 +108,7 @@ function getDummyDocuments(): Document[] {
       userName: "김근로",
       title: "국민연금가입증명서",
       type: "insurance",
-      status: "registered",
-      canDownload: true,
-      registrationDate: registrationDate
+      status: "unregistered"
     },
     {
       id: "doc-009",
@@ -116,9 +116,7 @@ function getDummyDocuments(): Document[] {
       userName: "김근로",
       title: "중증장애인확인서",
       type: "welfare",
-      status: "registered",
-      canDownload: true,
-      registrationDate: registrationDate
+      status: "unregistered"
     },
     {
       id: "doc-010",
@@ -126,9 +124,7 @@ function getDummyDocuments(): Document[] {
       userName: "김근로",
       title: "건강보험득실확인서",
       type: "insurance",
-      status: "registered",
-      canDownload: true,
-      registrationDate: registrationDate
+      status: "unregistered"
     },
     {
       id: "doc-011",
@@ -136,9 +132,7 @@ function getDummyDocuments(): Document[] {
       userName: "김근로",
       title: "복지카드",
       type: "welfare",
-      status: "registered",
-      canDownload: true,
-      registrationDate: registrationDate
+      status: "unregistered"
     },
     {
       id: "doc-012",
@@ -146,9 +140,7 @@ function getDummyDocuments(): Document[] {
       userName: "김근로",
       title: "고용보험자격이력내역서",
       type: "insurance",
-      status: "registered",
-      canDownload: true,
-      registrationDate: registrationDate
+      status: "unregistered"
     }
   ]
 }
@@ -219,6 +211,35 @@ export function reviewDocument(
     doc.status = status
     doc.reviewedBy = reviewedBy
     doc.reviewNote = reviewNote
+    saveDocument(doc)
+  }
+}
+
+// 서류 타입별 등록 주체 구분
+export function isCompanyDocument(type: Document["type"]): boolean {
+  // 기업이 작성·제공해야 하는 서류: 계약서, 서명 관련
+  return ["contract", "signature"].includes(type)
+}
+
+export function isWorkerDocument(type: Document["type"]): boolean {
+  // 근로자가 직접 발급받아 제출해야 하는 서류: 등록, 보험, 복리후생 관련
+  return ["registration", "insurance", "welfare"].includes(type)
+}
+
+// 파일 업로드 함수
+export function uploadDocumentFile(
+  docId: string,
+  fileName: string,
+  fileContent: string
+): void {
+  const docs = getDocuments()
+  const doc = docs.find((d) => d.id === docId)
+  if (doc) {
+    doc.fileName = fileName
+    doc.uploadedAt = new Date().toISOString()
+    doc.status = "registered"
+    doc.registrationDate = new Date().toISOString().split('T')[0]
+    doc.canDownload = true
     saveDocument(doc)
   }
 }
