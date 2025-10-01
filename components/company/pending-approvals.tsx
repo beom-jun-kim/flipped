@@ -51,13 +51,13 @@ export function PendingApprovals() {
               <div className="flex items-start gap-3 mb-3">
                 <div
                   className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    approval.type === "leave" ? "bg-orange-100" : "bg-purple-100"
+                    approval.type === "leave" ? "bg-[#23CCB7]/15" : "bg-[#23CCB7]/15"
                   }`}
                 >
                   {approval.type === "leave" ? (
-                    <Calendar className="w-5 h-5 text-orange-600" />
+                    <Calendar className="w-5 h-5 text-[#23CCB7]" />
                   ) : (
-                    <FileText className="w-5 h-5 text-purple-600" />
+                    <FileText className="w-5 h-5 text-[#23CCB7]" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

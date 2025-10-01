@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
 import { CompanyHeader } from "@/components/company/company-header"
@@ -9,11 +9,13 @@ import { QuickActionCard } from "@/components/worker/quick-action-card"
 import { EmployeeList } from "@/components/company/employee-list"
 import { PendingApprovals } from "@/components/company/pending-approvals"
 import { AccessibilityToolbar } from "@/components/accessibility/accessibility-toolbar"
-import { Users, Clock, Calendar, FileText, Briefcase, MessageSquare } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Users, Clock, Calendar, FileText, Briefcase, MessageSquare, X } from "lucide-react"
 
 export default function CompanyDashboard() {
   const router = useRouter()
   const user = useMemo(() => getCurrentUser(), [])
+  const [showBanner, setShowBanner] = useState(true)
 
   useEffect(() => {
     if (!user) {
@@ -23,7 +25,24 @@ export default function CompanyDashboard() {
     if (user.role !== "company") {
       router.push("/worker/dashboard")
     }
+
+    // 배너 표시 상태 확인
+    const today = new Date().toDateString()
+    const hiddenToday = localStorage.getItem("companyBannerHiddenToday")
+    if (hiddenToday === today) {
+      setShowBanner(false)
+    }
   }, [user])
+
+  const handleHideBannerToday = () => {
+    const today = new Date().toDateString()
+    localStorage.setItem("companyBannerHiddenToday", today)
+    setShowBanner(false)
+  }
+
+  const handleCloseBanner = () => {
+    setShowBanner(false)
+  }
 
   if (!user) return null
 
@@ -32,6 +51,42 @@ export default function CompanyDashboard() {
       <CompanyHeader />
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* 배너 팝업 */}
+        {showBanner && (
+          <div className="bg-gradient-to-r from-[#22ccb7] to-[#1ab5a3] text-white rounded-xl p-6 md:px-8 transition-all duration-300 ease-in-out">
+            <div className="max-w-7xl mx-auto">
+              <div className="md:flex items-end justify-between">
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold mb-1">📋 관리자 공지</h2>
+                  <p className="text-lg mb-2">2024년 연말 직원 관리 일정 안내</p>
+                  <div className="text-base font-medium break-keep">
+                    <p>1. 12월 25일(수) - 크리스마스 휴무일 직원 관리</p>
+                    <p>2. 12월 30일(월) ~ 1월 1일(수) - 연말연시 휴무 관리</p>
+                    <p>3. 1월 2일(목)부터 정상 근무 관리</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 items-center mt-4 md:mt-0">
+                  <Button
+                    onClick={handleHideBannerToday}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-white/20 text-base p-0 border py-2 px-4"
+                  >
+                    오늘 하루 보지 않기
+                  </Button>
+                  <Button
+                    onClick={handleCloseBanner}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-white/20 p-1 border py-2 px-4"
+                  >
+                    닫기
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-[#22ccb7] to-[#1ab5a3] text-white rounded-xl p-6 md:p-8">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">안녕하세요, {user.name}님!</h2>
@@ -58,7 +113,7 @@ export default function CompanyDashboard() {
 
         {/* Quick Actions */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">빠른 실행</h3>
+          <h3 className="text-lg font-semibold mb-4">업무 관리</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <QuickActionCard
               title="출퇴근 관리"

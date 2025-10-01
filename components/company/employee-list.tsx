@@ -58,21 +58,21 @@ const getStatusBadge = (status: Employee["status"]) => {
   switch (status) {
     case "present":
       return (
-        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+        <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
           <CheckCircle2 className="w-3 h-3 mr-1" />
           출근
         </Badge>
       )
     case "absent":
       return (
-        <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
+        <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
           <XCircle className="w-3 h-3 mr-1" />
           미출근
         </Badge>
       )
     case "leave":
       return (
-        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+        <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
           <Clock className="w-3 h-3 mr-1" />
           연차
         </Badge>
@@ -113,5 +113,5 @@ export function EmployeeList() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

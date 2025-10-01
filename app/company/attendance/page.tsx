@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth"
 import { CompanyHeader } from "@/components/company/company-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import {
@@ -14,7 +15,8 @@ import {
   initializeMockAttendance,
   type AttendanceRecord,
 } from "@/lib/attendance"
-import { Clock, Search, Users, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
+import { Clock, Search, Users, CheckCircle2, XCircle, AlertCircle, Calendar, TrendingUp, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react"
+import { CompanyAttendanceCalendar } from "@/components/company/attendance-calendar"
 
 export default function CompanyAttendancePage() {
   const router = useRouter()
@@ -23,6 +25,9 @@ export default function CompanyAttendancePage() {
   const [allRecords, setAllRecords] = useState<AttendanceRecord[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
 
   useEffect(() => {
     if (!user) {
@@ -51,42 +56,73 @@ export default function CompanyAttendancePage() {
     switch (status) {
       case "present":
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-            <CheckCircle2 className="w-3 h-3 mr-1 text-green-600" />
-            정상
+          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
+            정상 출근
           </Badge>
         )
       case "late":
         return (
-          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
-            <AlertCircle className="w-3 h-3 mr-1 text-yellow-600" />
+          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
             지각
           </Badge>
         )
       case "absent":
         return (
-          <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
-            <XCircle className="w-3 h-3 mr-1 text-red-600" />
+          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
             결근
           </Badge>
         )
       case "leave":
         return (
-          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-            <Clock className="w-3 h-3 mr-1 text-blue-600" />
+          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
             연차
           </Badge>
         )
     }
   }
 
+  const refreshAttendanceData = async () => {
+    setIsRefreshing(true)
+    // localStorage 초기화 후 더미 데이터 재생성
+    localStorage.removeItem("attendance_records")
+    initializeMockAttendance()
+    
+    // 데이터 새로고침
+    const today = getAllTodayAttendance()
+    const all = getAttendanceRecords()
+    setTodayAttendance(today)
+    setAllRecords(all)
+    
+    // 페이지 초기화
+    setCurrentPage(1)
+    
+    setTimeout(() => setIsRefreshing(false), 1000)
+  }
+
   const filteredRecords = todayAttendance.filter((record) =>
     record.userName.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(filteredRecords.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedRecords = filteredRecords.slice(startIndex, endIndex)
+
   const presentCount = todayAttendance.filter((r) => r.status === "present" || r.status === "late").length
   const lateCount = todayAttendance.filter((r) => r.status === "late").length
   const absentCount = todayAttendance.filter((r) => r.status === "absent").length
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // 검색어 변경 시 첫 페이지로 이동
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+    setCurrentPage(1)
+  }
 
   if (!user) return null
 
@@ -94,24 +130,18 @@ export default function CompanyAttendancePage() {
     <div className="min-h-screen bg-gray-50">
       <CompanyHeader />
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h2 className="text-2xl font-bold mb-2">출퇴근 관리</h2>
-          <p className="text-muted-foreground">직원들의 출퇴근 현황을 확인하세요</p>
-        </div>
-
+      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Statistics */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-3 gap-4">
           <Card className="border-gray-200">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#22ccb7]/10 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-[#22ccb7]" />
+                  <Calendar className="w-5 h-5 text-[#23CCB7]" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">전체 직원</p>
-                  <p className="text-2xl font-bold">25명</p>
+                  <p className="text-sm text-muted-foreground">이번 달 출근</p>
+                  <p className="text-2xl font-bold">18일</p>
                 </div>
               </div>
             </CardContent>
@@ -120,12 +150,12 @@ export default function CompanyAttendancePage() {
           <Card className="border-gray-200">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#23CCB7]/15">
+                  <TrendingUp className="w-5 h-5 text-[#23CCB7]" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">출근</p>
-                  <p className="text-2xl font-bold">{presentCount}명</p>
+                  <p className="text-sm text-muted-foreground">정상 출근</p>
+                  <p className="text-2xl font-bold">16일</p>
                 </div>
               </div>
             </CardContent>
@@ -134,80 +164,135 @@ export default function CompanyAttendancePage() {
           <Card className="border-gray-200">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-yellow-600" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#23CCB7]/15">
+                  <Clock className="w-5 h-5 text-[#23CCB7]" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">지각</p>
-                  <p className="text-2xl font-bold">{lateCount}명</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-gray-200">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <XCircle className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">결근</p>
-                  <p className="text-2xl font-bold">{absentCount}명</p>
+                  <p className="text-2xl font-bold">2일</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Today's Attendance */}
-        <Card className="border-gray-200">
-          <CardContent className="p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">오늘의 출퇴근 현황</h3>
-              <p className="text-sm text-muted-foreground">
-                {currentTime.toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "long" })}
-              </p>
-            </div>
+        {/* Today's Attendance and Calendar */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          <Card className="border-gray-200 gap-1">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">오늘의 출퇴근 현황</h3>
+                <div className="flex items-center gap-3">
+                  <p className="text-sm text-muted-foreground hidden sm:block">
+                    {currentTime.toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "long" })}
+                  </p>
+                  <Button
+                    onClick={refreshAttendanceData}
+                    disabled={isRefreshing}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-1 ${isRefreshing ? "animate-spin" : ""}`} />
+                    새로고침
+                  </Button>
+                </div>
+              </div>
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="직원 이름으로 검색..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12"
-              />
-            </div>
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="직원 이름으로 검색..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="pl-10 h-12"
+                />
+              </div>
 
-            {/* Attendance List */}
-            <div className="space-y-3">
-              {filteredRecords.length > 0 ? (
-                filteredRecords.map((record) => (
-                  <div key={record.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50">
-                    <Avatar className="h-10 w-10 bg-[#22ccb7] text-white">
-                      <AvatarFallback className="bg-[#22ccb7] text-white">{record.userName[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium">{record.userName}</p>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                        <span>출근: {record.checkIn || "-"}</span>
-                        <span>퇴근: {record.checkOut || "-"}</span>
-                        {record.workHours && <span>근무: {record.workHours}시간</span>}
+              {/* Attendance List */}
+              <div className="space-y-3">
+                {paginatedRecords.length > 0 ? (
+                  paginatedRecords.map((record) => (
+                    <div key={record.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                      <Avatar className="h-10 w-10 bg-[#22ccb7] text-white">
+                        <AvatarFallback className="bg-[#22ccb7] text-white">{record.userName[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium">{record.userName}</p>
+                        <div className="hidden sm:flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                          <span>출근: {record.checkIn || null}</span>
+                          <span>퇴근: {record.checkOut || null}</span>
+                          {record.workHours && <span>근무: {record.workHours}시간</span>}
+                        </div>
                       </div>
+                      {getStatusBadge(record.status)}
                     </div>
-                    {getStatusBadge(record.status)}
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {searchQuery ? "검색 결과가 없습니다" : "오늘의 출퇴근 기록이 없습니다"}
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  {searchQuery ? "검색 결과가 없습니다" : "오늘의 출퇴근 기록이 없습니다"}
+                )}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center pt-4 border-t">
+                  {/* <div className="text-sm text-muted-foreground">
+                    {startIndex + 1}-{Math.min(endIndex, filteredRecords.length)} / {filteredRecords.length}명
+                  </div> */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="h-8 w-8 p-0"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className={`h-8 w-8 p-0 ${
+                            currentPage === page 
+                              ? "bg-[#22ccb7] hover:bg-[#1ab5a3] text-white" 
+                              : ""
+                          }`}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="h-8 w-8 p-0"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <CompanyAttendanceCalendar
+            allAttendanceRecords={allRecords}
+            onDateSelect={(date) => {
+              console.log("Selected date:", date);
+            }}
+          />
+        </div>
       </main>
     </div>
   )
