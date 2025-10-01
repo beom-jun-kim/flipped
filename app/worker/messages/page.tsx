@@ -21,7 +21,7 @@ import {
   type Message,
   type User,
 } from "@/lib/messages"
-import { MessageSquare, Send, Trash2, Mail, MailOpen, Search, X, ChevronDown, User } from "lucide-react"
+import { MessageSquare, Send, Trash2, Mail, MailOpen, Search, X, ChevronDown, User as UserIcon } from "lucide-react"
 import { AccessibilityToolbar } from "@/components/accessibility/accessibility-toolbar"
 
 export default function WorkerMessagesPage() {
@@ -191,14 +191,14 @@ export default function WorkerMessagesPage() {
               <DialogHeader>
                 <DialogTitle className="flex items-center justify-between">
                   회원검색
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsSearchOpen(false)}
                     className="h-8 w-8 p-0"
                   >
                     <X className="w-4 h-4" />
-                  </Button>
+                  </Button> */}
                 </DialogTitle>
               </DialogHeader>
               
@@ -218,21 +218,21 @@ export default function WorkerMessagesPage() {
                     <Search className="w-4 h-4 mr-1" />
                     회원검색
                   </Button>
-                  <Button
+                  {/* <Button
                     onClick={handleResetSearch}
                     variant="outline"
                     className="bg-transparent"
                   >
                     초기화
-                  </Button>
+                  </Button> */}
                 </div>
 
                 {/* 필터 옵션 */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-4">
+                  {/* <div className="flex items-center gap-4">
                     <label className="text-sm font-medium">전체선택</label>
                     <input type="checkbox" className="rounded" />
-                  </div>
+                  </div> */}
                   
                   <div className="flex items-center gap-4">
                     <label className="text-sm font-medium">역할:</label>
@@ -282,7 +282,7 @@ export default function WorkerMessagesPage() {
                           className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer rounded"
                         >
                           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-gray-500" />
+                            <UserIcon className="w-4 h-4 text-gray-500" />
                           </div>
                           <div className="flex-1">
                             <p className="text-sm font-medium">{user.name}</p>
