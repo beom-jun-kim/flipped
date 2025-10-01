@@ -22,7 +22,7 @@ import {
   type User,
 } from "@/lib/messages"
 import { MessageSquare, Send, Trash2, Mail, MailOpen, Search, X, ChevronDown, User as UserIcon } from "lucide-react"
-import { AccessibilityToolbar } from "@/components/accessibility/accessibility-toolbar"
+import { ChatButton } from "@/components/accessibility/accessibility-toolbar"
 
 export default function WorkerMessagesPage() {
   const router = useRouter()
@@ -405,7 +405,7 @@ export default function WorkerMessagesPage() {
         </div>
       </main>
 
-      <AccessibilityToolbar />
+      <ChatButton />
     </div>
   )
 }

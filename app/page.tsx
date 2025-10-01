@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
-import { AccessibilityToolbar } from "@/components/accessibility/accessibility-toolbar"
+import { ChatButton } from "@/components/accessibility/accessibility-toolbar"
 import { Building2, Users, CheckCircle2 } from "lucide-react"
 
 export default function Home() {
@@ -129,7 +129,7 @@ export default function Home() {
         </div>
       </section>
 
-      <AccessibilityToolbar />
+      <ChatButton />
     </main>
   )
 }

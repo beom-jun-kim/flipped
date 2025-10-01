@@ -1,5 +1,5 @@
 import { LoginForm } from "@/components/auth/login-form"
-import { AccessibilityToolbar } from "@/components/accessibility/accessibility-toolbar"
+import { ChatButton } from "@/components/accessibility/accessibility-toolbar"
 
 export default function LoginPage() {
   return (
@@ -11,7 +11,7 @@ export default function LoginPage() {
         </div>
         <LoginForm />
       </div>
-      <AccessibilityToolbar />
+      <ChatButton />
     </main>
   )
 }

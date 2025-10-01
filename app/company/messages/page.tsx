@@ -23,7 +23,6 @@ import {
   type User,
 } from "@/lib/messages"
 import { MessageSquare, Send, Trash2, Mail, MailOpen, Search, X, User as UserIcon, ChevronLeft, ChevronRight } from "lucide-react"
-import { AccessibilityToolbar } from "@/components/accessibility/accessibility-toolbar"
 
 export default function CompanyMessagesPage() {
   const router = useRouter()
@@ -459,8 +458,6 @@ export default function CompanyMessagesPage() {
           </Card>
         </div>
       </main>
-
-      <AccessibilityToolbar />
     </div>
   )
 }

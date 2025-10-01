@@ -8,7 +8,7 @@ import { StatsCard } from "@/components/worker/stats-card"
 import { QuickActionCard } from "@/components/worker/quick-action-card"
 import { EmployeeList } from "@/components/company/employee-list"
 import { PendingApprovals } from "@/components/company/pending-approvals"
-import { AccessibilityToolbar } from "@/components/accessibility/accessibility-toolbar"
+import { ChatButton } from "@/components/accessibility/accessibility-toolbar"
 import { Button } from "@/components/ui/button"
 import { Users, Clock, Calendar, FileText, Briefcase, MessageSquare, X } from "lucide-react"
 
@@ -78,7 +78,7 @@ export default function CompanyDashboard() {
                     onClick={handleCloseBanner}
                     variant="ghost"
                     size="sm"
-                    className="text-white hover:bg-white/20 p-1 border py-2 px-4"
+                    className="text-white hover:bg-white/20 p-1 border py-2 px-4 text-base"
                   >
                     닫기
                   </Button>
@@ -157,6 +157,13 @@ export default function CompanyDashboard() {
               onClick={() => router.push("/company/messages")}
               color="#22ccb7"
             />
+            {/* <QuickActionCard
+              title="채팅"
+              description="실시간 채팅하기"
+              icon={MessageSquare}
+              onClick={() => router.push("/company/chat")}
+              color="#22ccb7"
+            /> */}
           </div>
         </div>
 
@@ -167,8 +174,8 @@ export default function CompanyDashboard() {
         </div>
       </main>
 
-      {/* Accessibility Toolbar */}
-      <AccessibilityToolbar />
+      {/* Chat Button */}
+      <ChatButton />
     </div>
   )
 }
