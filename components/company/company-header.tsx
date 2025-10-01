@@ -1,53 +1,71 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { getCurrentUser, logout } from "@/lib/auth"
-import { getAccessibilitySettings, saveAccessibilitySettings, type FontSize, type ContrastMode, initializeAccessibility } from "@/lib/accessibility"
-import { LogOut, Menu, Type, Contrast, X } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { getCurrentUser, logout } from "@/lib/auth";
+import {
+  getAccessibilitySettings,
+  saveAccessibilitySettings,
+  type FontSize,
+  type ContrastMode,
+  initializeAccessibility,
+} from "@/lib/accessibility";
+import { LogOut, Menu, Type, Contrast, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export function CompanyHeader() {
-  const router = useRouter()
-  const user = getCurrentUser()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
-  const [fontSize, setFontSize] = useState<FontSize | undefined>(undefined)
-  const [contrastMode, setContrastMode] = useState<ContrastMode | undefined>(undefined)
-  const [isLoaded, setIsLoaded] = useState(false)
+  const router = useRouter();
+  const user = getCurrentUser();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
+  const [fontSize, setFontSize] = useState<FontSize | undefined>(undefined);
+  const [contrastMode, setContrastMode] = useState<ContrastMode | undefined>(
+    undefined
+  );
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    initializeAccessibility()
-    const settings = getAccessibilitySettings()
-    setFontSize(settings.fontSize)
-    setContrastMode(settings.contrastMode)
-    setIsLoaded(true)
-  }, [])
+    initializeAccessibility();
+    const settings = getAccessibilitySettings();
+    setFontSize(settings.fontSize);
+    setContrastMode(settings.contrastMode);
+    setIsLoaded(true);
+  }, []);
 
   const handleFontSizeChange = (size: FontSize) => {
-    setFontSize(size)
-    saveAccessibilitySettings({ fontSize: size, contrastMode: contrastMode || "normal" })
-  }
+    setFontSize(size);
+    saveAccessibilitySettings({
+      fontSize: size,
+      contrastMode: contrastMode || "normal",
+    });
+  };
 
   const handleContrastModeChange = (mode: ContrastMode) => {
-    setContrastMode(mode)
-    saveAccessibilitySettings({ fontSize: fontSize || "medium", contrastMode: mode })
-  }
+    setContrastMode(mode);
+    saveAccessibilitySettings({
+      fontSize: fontSize || "medium",
+      contrastMode: mode,
+    });
+  };
 
   const handleLogout = () => {
-    logout()
-    router.push("/login")
-  }
+    logout();
+    router.push("/login");
+  };
 
-  if (!user) return null
+  if (!user) return null;
 
   return (
     <header className="bg-[#22ccb7] border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            <div className="w-24 bg-[#22ccb7] flex items-center justify-center">
+            <div
+              className="w-24 bg-[#22ccb7] flex items-center justify-center cursor-pointer"
+              onClick={() => router.push("/")}
+              style={{ userSelect: "none" }}
+            >
               <img
                 src="https://xn--5y2bj31c.com/static/media/logo_basic.f40d41f4044bb64fb975b46bdf59bd3b.svg"
                 alt="logo"
@@ -112,28 +130,44 @@ export function CompanyHeader() {
                   <Button
                     variant={fontSize === "small" ? "default" : "outline"}
                     onClick={() => handleFontSizeChange("small")}
-                    className={`cursor-pointer flex-1 min-w-0 ${fontSize === "small" ? "bg-[#22ccb7] hover:bg-[#1ab5a3]" : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"}`}
+                    className={`cursor-pointer flex-1 min-w-0 ${
+                      fontSize === "small"
+                        ? "bg-[#22ccb7] hover:bg-[#1ab5a3]"
+                        : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"
+                    }`}
                   >
                     작게
                   </Button>
                   <Button
                     variant={fontSize === "medium" ? "default" : "outline"}
                     onClick={() => handleFontSizeChange("medium")}
-                    className={`cursor-pointer flex-1 min-w-0 ${fontSize === "medium" ? "bg-[#22ccb7] hover:bg-[#1ab5a3]" : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"}`}
+                    className={`cursor-pointer flex-1 min-w-0 ${
+                      fontSize === "medium"
+                        ? "bg-[#22ccb7] hover:bg-[#1ab5a3]"
+                        : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"
+                    }`}
                   >
                     보통
                   </Button>
                   <Button
                     variant={fontSize === "large" ? "default" : "outline"}
                     onClick={() => handleFontSizeChange("large")}
-                    className={`cursor-pointer flex-1 min-w-0 ${fontSize === "large" ? "bg-[#22ccb7] hover:bg-[#1ab5a3]" : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"}`}
+                    className={`cursor-pointer flex-1 min-w-0 ${
+                      fontSize === "large"
+                        ? "bg-[#22ccb7] hover:bg-[#1ab5a3]"
+                        : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"
+                    }`}
                   >
                     크게
                   </Button>
                   <Button
                     variant={fontSize === "xlarge" ? "default" : "outline"}
                     onClick={() => handleFontSizeChange("xlarge")}
-                    className={`cursor-pointer flex-2 min-w-0 ${fontSize === "xlarge" ? "bg-[#22ccb7] hover:bg-[#1ab5a3]" : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"}`}
+                    className={`cursor-pointer flex-2 min-w-0 ${
+                      fontSize === "xlarge"
+                        ? "bg-[#22ccb7] hover:bg-[#1ab5a3]"
+                        : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"
+                    }`}
                   >
                     매우 크게
                   </Button>
@@ -151,7 +185,11 @@ export function CompanyHeader() {
                     variant={contrastMode === "normal" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleContrastModeChange("normal")}
-                    className={`cursor-pointer ${contrastMode === "normal" ? "bg-[#22ccb7] hover:bg-[#1ab5a3]" : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"}`}
+                    className={`cursor-pointer ${
+                      contrastMode === "normal"
+                        ? "bg-[#22ccb7] hover:bg-[#1ab5a3]"
+                        : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"
+                    }`}
                   >
                     일반
                   </Button>
@@ -159,7 +197,11 @@ export function CompanyHeader() {
                     variant={contrastMode === "high" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleContrastModeChange("high")}
-                    className={`cursor-pointer ${contrastMode === "high" ? "bg-[#22ccb7] hover:bg-[#1ab5a3]" : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"}`}
+                    className={`cursor-pointer ${
+                      contrastMode === "high"
+                        ? "bg-[#22ccb7] hover:bg-[#1ab5a3]"
+                        : "border-[#22ccb7]/30 hover:bg-[#f4fdfc]"
+                    }`}
                   >
                     고대비
                   </Button>
@@ -174,5 +216,5 @@ export function CompanyHeader() {
         </div>
       )}
     </header>
-  )
+  );
 }

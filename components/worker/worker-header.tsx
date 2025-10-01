@@ -50,14 +50,11 @@ export function WorkerHeader() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            {/* <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-[#f4fdfc] rounded-lg cursor-pointer transition-colors"
-              aria-label="메뉴 열기"
+            <div
+              className="w-24 bg-[#22ccb7] flex items-center justify-center cursor-pointer"
+              onClick={() => router.push("/")}
+              style={{ userSelect: "none" }}
             >
-              <Menu className="w-5 h-5 text-[#22ccb7]" />
-            </button> */}
-            <div className="w-24 bg-[#22ccb7] flex items-center justify-center">
               <img
                 src="https://xn--5y2bj31c.com/static/media/logo_basic.f40d41f4044bb64fb975b46bdf59bd3b.svg"
                 alt="logo"
