@@ -33,7 +33,7 @@ const TEST_USERS: Record<string, { password: string; user: User }> = {
   test02: {
     password: "1234",
     user: {
-      id: "test02",
+      id: "company1",
       username: "test02",
       role: "company",
       name: "박인사",

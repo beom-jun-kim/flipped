@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import {
   getUserMessages,
+  getUnreadCount,
   sendMessage,
   markAsRead,
   deleteMessage,
@@ -21,7 +22,7 @@ import {
   type Message,
   type User,
 } from "@/lib/messages"
-import { MessageSquare, Send, Trash2, Mail, MailOpen, Search, X, User as UserIcon } from "lucide-react"
+import { MessageSquare, Send, Trash2, Mail, MailOpen, Search, X, User as UserIcon, ChevronLeft, ChevronRight } from "lucide-react"
 import { AccessibilityToolbar } from "@/components/accessibility/accessibility-toolbar"
 
 export default function CompanyMessagesPage() {
@@ -30,16 +31,13 @@ export default function CompanyMessagesPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
   const [isComposeOpen, setIsComposeOpen] = useState(false)
-  const [newMessage, setNewMessage] = useState({
-    receiverId: "",
-    receiverName: "",
-    subject: "",
-    content: "",
-  })
+  const [newMessage, setNewMessage] = useState({ subject: "", content: "", receiverId: "", receiverName: "" })
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [roleFilter, setRoleFilter] = useState<"all" | "company" | "worker">("worker")
+  const [roleFilter, setRoleFilter] = useState<"all" | "company" | "worker">("all")
   const [searchResults, setSearchResults] = useState<User[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
 
   useEffect(() => {
     if (!user) {
@@ -74,12 +72,7 @@ export default function CompanyMessagesPage() {
       content: newMessage.content,
     })
 
-    setNewMessage({
-      receiverId: "",
-      receiverName: "",
-      subject: "",
-      content: "",
-    })
+    setNewMessage({ subject: "", content: "", receiverId: "", receiverName: "" })
     setIsComposeOpen(false)
     reloadMessages()
   }
@@ -102,7 +95,7 @@ export default function CompanyMessagesPage() {
 
   const handleResetSearch = () => {
     setSearchQuery("")
-    setRoleFilter("worker")
+    setRoleFilter("all")
     setSearchResults([])
   }
 
@@ -114,6 +107,17 @@ export default function CompanyMessagesPage() {
     }
   }
 
+  // 페이지네이션 로직
+  const totalPages = Math.ceil(messages.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedMessages = messages.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    setSelectedMessage(null) // 페이지 변경 시 선택된 메시지 초기화
+  }
+
   const handleDeleteMessage = (messageId: string) => {
     deleteMessage(messageId)
     setSelectedMessage(null)
@@ -121,6 +125,8 @@ export default function CompanyMessagesPage() {
   }
 
   if (!user) return null
+
+  const unreadCount = getUnreadCount(user.id)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -131,7 +137,7 @@ export default function CompanyMessagesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-1">쪽지함</h1>
-            <p className="text-sm text-muted-foreground">직원과 메시지를 주고받으세요</p>
+            <p className="text-sm text-muted-foreground">읽지 않은 쪽지 {unreadCount}개</p>
           </div>
           <Dialog open={isComposeOpen} onOpenChange={setIsComposeOpen}>
             <DialogTrigger asChild>
@@ -311,18 +317,18 @@ export default function CompanyMessagesPage() {
           {/* Messages List */}
           <Card className="border-gray-200">
             <CardHeader>
-              <CardTitle className="text-lg">쪽지 목록</CardTitle>
+              <CardTitle className="text-lg">받은 쪽지</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {messages.length > 0 ? (
-                  messages.map((message) => (
+                {paginatedMessages.length > 0 ? (
+                  paginatedMessages.map((message) => (
                     <div
                       key={message.id}
                       onClick={() => handleMessageClick(message)}
                       className={`p-4 border rounded-lg cursor-pointer transition-colors hover:bg-[#f4fdfc] ${
                         selectedMessage?.id === message.id ? "bg-[#f4fdfc] border-[#22ccb7]" : ""
-                      }`}
+                      } ${!message.read && message.receiverId === user.id ? "bg-blue-50" : ""}`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -333,14 +339,14 @@ export default function CompanyMessagesPage() {
                               <Mail className="w-4 h-4 text-[#22ccb7]" />
                             )
                           ) : (
-                            <Send className="w-4 h-4 text-[#22ccb7]" />
+                            <Send className="w-4 h-4 text-gray-400" />
                           )}
                           <p className="font-medium text-sm">
                             {message.receiverId === user.id ? message.senderName : message.receiverName}
                           </p>
                         </div>
-                        {message.senderId === user.id && (
-                          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">보낸 쪽지</Badge>
+                        {!message.read && message.receiverId === user.id && (
+                          <Badge className="bg-[#22ccb7] text-white hover:bg-[#22ccb7]">새 쪽지</Badge>
                         )}
                       </div>
                       <p className="font-medium mb-1">{message.subject}</p>
@@ -352,10 +358,56 @@ export default function CompanyMessagesPage() {
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
                     <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p>쪽지가 없습니다</p>
+                    <p>받은 쪽지가 없습니다</p>
                   </div>
                 )}
               </div>
+              
+              {/* 페이지네이션 */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    {startIndex + 1}-{Math.min(endIndex, messages.length)} / {messages.length}개
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="h-8 w-8 p-0"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className={`h-8 w-8 p-0 ${
+                          currentPage === page 
+                            ? "bg-[#22ccb7] hover:bg-[#1ab5a3] text-white" 
+                            : "hover:bg-gray-50"
+                        }`}
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="h-8 w-8 p-0"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
