@@ -14,7 +14,7 @@ interface QuickActionCardProps {
 
 export function QuickActionCard({ title, description, icon: Icon, onClick, color = "#22ccb7" }: QuickActionCardProps) {
   return (
-    <Card className="border-gray-200 hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
+    <Card className="border-gray-200 hover:shadow-md transition-shadow cursor-pointer py-0" onClick={onClick}>
       <CardContent className="p-6">
         <div
           className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
