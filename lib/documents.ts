@@ -98,7 +98,7 @@ function getDummyDocuments(): Document[] {
       id: "doc-007",
       userId: "test01",
       userName: "김근로",
-      title: "산재보험자격이력내역서",
+      title: "산재보험",
       type: "insurance",
       status: "unregistered"
     },
@@ -106,7 +106,7 @@ function getDummyDocuments(): Document[] {
       id: "doc-008",
       userId: "test01",
       userName: "김근로",
-      title: "국민연금가입증명서",
+      title: "국민연금 가입증명서",
       type: "insurance",
       status: "unregistered"
     },
@@ -122,7 +122,7 @@ function getDummyDocuments(): Document[] {
       id: "doc-010",
       userId: "test01",
       userName: "김근로",
-      title: "건강보험득실확인서",
+      title: "건강보험자격득실확인서",
       type: "insurance",
       status: "unregistered"
     },

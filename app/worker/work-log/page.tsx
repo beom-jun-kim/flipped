@@ -91,7 +91,7 @@ export default function WorkerWorkLogPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-2">업무일지</h2>
-            <p className="text-muted-foreground">오늘의 업무 내용을 기록하세요</p>
+            <p className="text-muted-foreground">오늘의 업무 내용 기록</p>
           </div>
           {!isCreating && (
             <Button onClick={() => setIsCreating(true)} className="bg-[#22ccb7] hover:bg-[#1ab5a3]">

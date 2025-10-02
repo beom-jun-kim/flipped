@@ -7,8 +7,10 @@ import { WorkerHeader } from "@/components/worker/worker-header";
 import { StatsCard } from "@/components/worker/stats-card";
 import { QuickActionCard } from "@/components/worker/quick-action-card";
 import { RecentActivity } from "@/components/worker/recent-activity";
+import { CheckInPopup } from "@/components/worker/check-in-popup";
 import { ChatButton } from "@/components/accessibility/accessibility-toolbar";
 import { Button } from "@/components/ui/button";
+import { shouldShowCheckInPopup, initializeMockAttendance } from "@/lib/attendance";
 import {
   Clock,
   FileText,
@@ -25,6 +27,7 @@ export default function WorkerDashboard() {
   const router = useRouter();
   const user = useMemo(() => getCurrentUser(), []);
   const [showBanner, setShowBanner] = useState(true);
+  const [showCheckInPopup, setShowCheckInPopup] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -35,12 +38,19 @@ export default function WorkerDashboard() {
       router.push("/company/dashboard");
     }
 
+    // 출근 데이터 초기화
+    initializeMockAttendance();
+
     // 배너 표시 상태 확인
     const today = new Date().toDateString();
     const hiddenToday = localStorage.getItem("bannerHiddenToday");
     if (hiddenToday === today) {
       setShowBanner(false);
     }
+
+    // 출근 팝업 표시 여부 확인
+    const shouldShow = shouldShowCheckInPopup(user.id);
+    setShowCheckInPopup(shouldShow);
   }, [user]);
 
   const handleHideBannerToday = () => {
@@ -51,6 +61,10 @@ export default function WorkerDashboard() {
 
   const handleCloseBanner = () => {
     setShowBanner(false);
+  };
+
+  const handleCloseCheckInPopup = () => {
+    setShowCheckInPopup(false);
   };
 
   if (!user) return null;
@@ -208,6 +222,14 @@ export default function WorkerDashboard() {
 
       {/* Chat Button */}
       <ChatButton />
+
+      {/* Check-in Popup */}
+      <CheckInPopup
+        isOpen={showCheckInPopup}
+        onClose={handleCloseCheckInPopup}
+        userName={user.name}
+        userId={user.id}
+      />
     </div>
   );
 }

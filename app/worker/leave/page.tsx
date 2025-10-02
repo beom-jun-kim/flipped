@@ -110,7 +110,7 @@ export default function WorkerLeavePage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-2">연차 관리</h2>
-            <p className="text-muted-foreground">연차를 신청하고 사용 현황을 확인하세요</p>
+            <p className="text-muted-foreground">연차 신청 및 확인</p>
           </div>
           {!isCreating && (
             <Button onClick={() => setIsCreating(true)} className="bg-[#22ccb7] hover:bg-[#1ab5a3]">

@@ -95,6 +95,46 @@ export function getAllTodayAttendance(): AttendanceRecord[] {
   return records.filter((r) => r.date === today)
 }
 
+export function isCheckedInToday(userId: string): boolean {
+  const todayRecord = getTodayAttendance(userId)
+  return todayRecord !== null && todayRecord.checkIn !== undefined
+}
+
+export function shouldShowCheckInPopup(userId: string): boolean {
+  const todayRecord = getTodayAttendance(userId)
+  
+  // 출근하지 않았거나, 출근 시간이 없는 경우
+  if (todayRecord === null || todayRecord.checkIn === undefined) {
+    // "나중에" 버튼을 클릭한 경우 시간 지연 확인
+    const delayUntil = localStorage.getItem(`checkInPopupDelay_${userId}`)
+    if (delayUntil) {
+      const delayTime = new Date(delayUntil).getTime()
+      const currentTime = new Date().getTime()
+      
+      // 아직 지연 시간이 지나지 않았다면 팝업 표시하지 않음
+      if (currentTime < delayTime) {
+        return false
+      } else {
+        // 지연 시간이 지났다면 저장된 값 삭제
+        localStorage.removeItem(`checkInPopupDelay_${userId}`)
+      }
+    }
+    
+    return true
+  }
+  
+  return false
+}
+
+export function setCheckInPopupDelay(userId: string, hours: number = 5): void {
+  if (typeof window === "undefined") return
+  
+  const delayTime = new Date()
+  delayTime.setHours(delayTime.getHours() + hours)
+  
+  localStorage.setItem(`checkInPopupDelay_${userId}`, delayTime.toISOString())
+}
+
 // 더미 데이터 생성
 function generateMockAttendanceData(): AttendanceRecord[] {
   const today = new Date().toISOString().split("T")[0]

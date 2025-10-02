@@ -11,7 +11,36 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getUserDocuments, isWorkerDocument, uploadDocumentFile, type Document } from "@/lib/documents";
-import { FileText, Download, Eye, Upload } from "lucide-react";
+import { FileText, Download, Eye, Upload, ExternalLink } from "lucide-react";
+
+// 기관 URL 매핑
+const INSTITUTION_URLS = {
+  "산재보험": {
+    name: "고용산재보험 토탈서비스",
+    url: "https://total.comwel.or.kr/",
+    description: "산재보험 관련 서류 발급"
+  },
+  "국민연금 가입증명서": {
+    name: "국민연금공단",
+    url: "https://www.nps.or.kr/gate.do",
+    description: "국민연금 가입증명서 발급"
+  },
+  "중증장애인확인서": {
+    name: "정부24",
+    url: "https://www.gov.kr/portal/service/serviceInfo/B55258300013",
+    description: "중증장애인확인서 발급"
+  },
+  "건강보험자격득실확인서": {
+    name: "국민건강보험공단",
+    url: "https://www.nhis.or.kr/nhis/index.do",
+    description: "건강보험자격득실확인서 발급"
+  },
+  "고용보험자격이력내역서": {
+    name: "정부24",
+    url: "https://www.gov.kr/portal/service/serviceInfo/B49000100050",
+    description: "고용보험자격이력내역서 발급"
+  }
+} as const;
 
 export default function WorkerDocumentsPage() {
   const router = useRouter();
@@ -32,7 +61,7 @@ export default function WorkerDocumentsPage() {
       return;
     }
 
-    // localStorage 초기화 후 데이터 로드
+    // localStorage 초기화 후 새로운 데이터 로드
     if (typeof window !== "undefined") {
       localStorage.removeItem("documents");
     }
@@ -78,6 +107,17 @@ export default function WorkerDocumentsPage() {
     setIsUploadModalOpen(false);
     setSelectedDoc(null);
     setSelectedFile(null);
+  };
+
+  const handleOpenInstitutionLink = (docTitle: string) => {
+    const institution = INSTITUTION_URLS[docTitle as keyof typeof INSTITUTION_URLS];
+    if (institution) {
+      window.open(institution.url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const getInstitutionInfo = (docTitle: string) => {
+    return INSTITUTION_URLS[docTitle as keyof typeof INSTITUTION_URLS];
   };
 
   const getStatusBadge = (status: Document["status"]) => {
@@ -165,7 +205,20 @@ export default function WorkerDocumentsPage() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* 기관 링크 버튼 - 해당 서류가 기관 URL에 매핑되어 있는 경우에만 표시 */}
+                      {getInstitutionInfo(doc.title) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                          onClick={() => handleOpenInstitutionLink(doc.title)}
+                        >
+                          <ExternalLink className="w-4 h-4 mr-1" />
+                          {getInstitutionInfo(doc.title)?.name}
+                        </Button>
+                      )}
+
                       {/* 근로자가 등록해야 할 서류이고 미등록 상태일 때만 등록 버튼 표시 */}
                       {isWorkerDocument(doc.type) && doc.status === "unregistered" && (
                         <Button
@@ -232,6 +285,23 @@ export default function WorkerDocumentsPage() {
               <p className="text-sm text-muted-foreground mb-2">
                 {selectedDoc?.title} 서류를 등록하세요
               </p>
+              {/* 기관 링크 정보 표시 */}
+              {selectedDoc && getInstitutionInfo(selectedDoc.title) && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700 mb-2">
+                    💡 {getInstitutionInfo(selectedDoc.title)?.description}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                    onClick={() => handleOpenInstitutionLink(selectedDoc.title)}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-1" />
+                    {getInstitutionInfo(selectedDoc.title)?.name}에서 발급받기
+                  </Button>
+                </div>
+              )}
             </div>
             
             <div className="space-y-3">
