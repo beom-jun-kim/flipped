@@ -85,7 +85,7 @@ export default function CompanyTasksPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-2">업무지시 관리</h2>
-            <p className="text-muted-foreground">직원에게 업무를 지시하고 관리하세요</p>
+            <p className="text-muted-foreground">직원 업무 지시 및 관리</p>
           </div>
           {!isCreating && (
             <Button onClick={() => setIsCreating(true)} className="bg-[#22ccb7] hover:bg-[#1ab5a3]">

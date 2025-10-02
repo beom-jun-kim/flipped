@@ -110,8 +110,8 @@ export function CompanyAttendanceCalendar({ allAttendanceRecords, onDateSelect }
   }
 
   const monthNames = [
-    "1월", "2월", "3월", "4월", "5월", "6월",
-    "7월", "8월", "9월", "10월", "11월", "12월"
+    "1", "2", "3", "4", "5", "6",
+    "7", "8", "9", "10", "11", "12"
   ]
 
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"]
@@ -133,9 +133,9 @@ export function CompanyAttendanceCalendar({ allAttendanceRecords, onDateSelect }
     <Card className="border-gray-200">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
+          <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="w-5 h-5 text-[#23CCB7]" />
-            직원 출퇴근 달력
+            출퇴근 달력
           </CardTitle>
           <div className="flex items-center gap-2">
             <Button
@@ -147,7 +147,7 @@ export function CompanyAttendanceCalendar({ allAttendanceRecords, onDateSelect }
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <span className="text-sm font-medium min-w-[80px] text-center">
-              {year}년 {monthNames[month]}
+              {year}. {monthNames[month]}
             </span>
             <Button
               variant="outline"

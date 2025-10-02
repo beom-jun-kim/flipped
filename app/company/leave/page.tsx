@@ -91,7 +91,7 @@ export default function CompanyLeavePage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-2">연차 관리</h2>
-            <p className="text-muted-foreground">직원들의 연차 신청을 검토하고 승인하세요</p>
+            <p className="text-muted-foreground">직원 연차 신청 검토 및 승인</p>
           </div>
         </div>
 
@@ -161,7 +161,7 @@ export default function CompanyLeavePage() {
                             <span className="text-sm text-muted-foreground">· {getTypeLabel(request.type)}</span>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
-                            {request.startDate} ~ {request.endDate} ({request.days}일)
+                            {request.startDate} ~ {request.endDate} {/* ({request.days}일) */}
                           </p>
                           <p className="text-sm">
                             <span className="text-muted-foreground">사유: </span>

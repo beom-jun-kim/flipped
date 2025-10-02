@@ -46,7 +46,7 @@ export default function WorkerTasksPage() {
         {/* Header */}
         <div>
           <h2 className="text-2xl font-bold mb-2">업무지시</h2>
-          <p className="text-muted-foreground">받은 업무를 확인하고 처리하세요</p>
+          <p className="text-muted-foreground">받은 업무 확인 및 처리</p>
         </div>
 
 

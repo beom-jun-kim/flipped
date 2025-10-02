@@ -160,7 +160,7 @@ export default function WorkerDocumentsPage() {
         <div>
           <h2 className="text-2xl font-bold mb-2">입사서류</h2>
           <p className="text-muted-foreground">
-            입사에 필요한 서류들을 확인하고 관리하세요
+            입사에 필요한 서류 확인 및 관리
           </p>
         </div>
 
@@ -184,7 +184,7 @@ export default function WorkerDocumentsPage() {
                         </h3>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           {doc.registrationDate && (
-                            <span>등록일: {doc.registrationDate}</span>
+                            <span>{doc.registrationDate}</span>
                           )}
                         </div>
                       </div>

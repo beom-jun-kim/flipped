@@ -80,7 +80,7 @@ export default function CompanyWorkLogPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-2">업무일지 관리</h2>
-            <p className="text-muted-foreground">직원들의 업무일지를 확인하고 피드백을 제공하세요</p>
+            <p className="text-muted-foreground">직원 업무일지 확인 및 피드백</p>
           </div>
         </div>
 
