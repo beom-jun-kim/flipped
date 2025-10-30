@@ -62,19 +62,19 @@ export default function CompanyAttendancePage() {
         )
       case "late":
         return (
-          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
+          <Badge className="bg-[#FFBC0A]/15 text-[#FFBC0A] hover:bg-[#FFBC0A]/15">
             지각
           </Badge>
         )
       case "absent":
         return (
-          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
+          <Badge className="bg-[#FF6262]/15 text-[#FF6262] hover:bg-[#FF6262]/15">
             결근
           </Badge>
         )
       case "leave":
         return (
-          <Badge className="bg-[#23CCB7]/15 text-[#23CCB7] hover:bg-[#23CCB7]/15">
+          <Badge className="bg-[#7F6FFF]/15 text-[#7F6FFF] hover:bg-[#7F6FFF]/15">
             연차
           </Badge>
         )
