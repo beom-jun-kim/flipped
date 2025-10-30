@@ -37,6 +37,7 @@ export default function CompanyMessagesPage() {
   const [searchResults, setSearchResults] = useState<User[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5
+  const [messageView, setMessageView] = useState<"inbox" | "sent">("inbox")
 
   useEffect(() => {
     if (!user) {
@@ -106,11 +107,12 @@ export default function CompanyMessagesPage() {
     }
   }
 
-  // 페이지네이션 로직
-  const totalPages = Math.ceil(messages.length / itemsPerPage)
+  // 필터 및 페이지네이션 로직
+  const filteredMessages = messages.filter(m => messageView === "inbox" ? m.receiverId === user?.id : m.senderId === user?.id)
+  const totalPages = Math.ceil(filteredMessages.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const paginatedMessages = messages.slice(startIndex, endIndex)
+  const paginatedMessages = filteredMessages.slice(startIndex, endIndex)
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -138,9 +140,10 @@ export default function CompanyMessagesPage() {
             <h1 className="text-2xl font-bold mb-1">쪽지함</h1>
             <p className="text-sm text-muted-foreground">읽지 않은 쪽지 {unreadCount}개</p>
           </div>
-          <Dialog open={isComposeOpen} onOpenChange={setIsComposeOpen}>
+          <div className="flex items-center gap-2">
+            <Dialog open={isComposeOpen} onOpenChange={setIsComposeOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#22ccb7] hover:bg-[#1ab5a3] text-white cursor-pointer">
+              <Button className="bg-[#22ccb7] hover:bg-[#1ab5a3] text-white cursor-pointer w-full sm:w-auto">
                 <Send className="w-4 h-4 mr-2" />
                 쪽지 보내기
               </Button>
@@ -196,7 +199,8 @@ export default function CompanyMessagesPage() {
                 </Button>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
 
           {/* 회원 검색 모달 */}
           <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
@@ -316,7 +320,27 @@ export default function CompanyMessagesPage() {
           {/* Messages List */}
           <Card className="border-gray-200">
             <CardHeader>
-              <CardTitle className="text-lg">받은 쪽지</CardTitle>
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle className="text-lg">쪽지</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={messageView === "inbox" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => { setMessageView("inbox"); setCurrentPage(1); setSelectedMessage(null) }}
+                    className={messageView === "inbox" ? "bg-[#22ccb7] hover:bg-[#1ab5a3] text-white" : ""}
+                  >
+                    받은 쪽지
+                  </Button>
+                  <Button
+                    variant={messageView === "sent" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => { setMessageView("sent"); setCurrentPage(1); setSelectedMessage(null) }}
+                    className={messageView === "sent" ? "bg-[#22ccb7] hover:bg-[#1ab5a3] text-white" : ""}
+                  >
+                    보낸 쪽지
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -357,7 +381,7 @@ export default function CompanyMessagesPage() {
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
                     <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p>받은 쪽지가 없습니다</p>
+                    <p>{messageView === "inbox" ? "받은 쪽지가 없습니다" : "보낸 쪽지가 없습니다"}</p>
                   </div>
                 )}
               </div>
@@ -420,15 +444,15 @@ export default function CompanyMessagesPage() {
                 <div className="space-y-4">
                   <div className="pb-4 border-b">
                     <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          {selectedMessage.receiverId === user.id ? "보낸 사람" : "받는 사람"}
-                        </p>
-                        <p className="font-medium">
-                          {selectedMessage.receiverId === user.id
-                            ? selectedMessage.senderName
-                            : selectedMessage.receiverName}
-                        </p>
+                      <div className="flex gap-8">
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">보낸 사람</p>
+                          <p className="font-medium">{selectedMessage.senderName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">받는 사람</p>
+                          <p className="font-medium">{selectedMessage.receiverName}</p>
+                        </div>
                       </div>
                       <Button
                         variant="ghost"
