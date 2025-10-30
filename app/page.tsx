@@ -33,7 +33,7 @@ export default function Home() {
             인사관리 플랫폼
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground text-balance mb-6 break-keep">
-            장애우 근로자와 기업을 위한 편안한 근무 환경을 제공합니다
+            장애인 근로자와 기업을 위한 편안한 근무 환경을 제공합니다
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button

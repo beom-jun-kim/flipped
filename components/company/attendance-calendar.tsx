@@ -88,6 +88,25 @@ export function CompanyAttendanceCalendar({ allAttendanceRecords, onDateSelect }
     return date.getMonth() === month
   }
 
+  // 주말 또는(고정) 공휴일 여부 확인
+  const isWeekendOrHoliday = (date: Date) => {
+    const day = date.getDay()
+    const isWeekend = day === 0 || day === 6
+    const m = date.getMonth() + 1
+    const d = date.getDate()
+    const isFixedHoliday = (
+      (m === 1 && d === 1) ||   // 신정
+      (m === 3 && d === 1) ||   // 삼일절
+      (m === 5 && d === 5) ||   // 어린이날
+      (m === 6 && d === 6) ||   // 현충일
+      (m === 8 && d === 15) ||  // 광복절
+      (m === 10 && d === 3) ||  // 개천절
+      (m === 10 && d === 9) ||  // 한글날
+      (m === 12 && d === 25)    // 성탄절
+    )
+    return isWeekend || isFixedHoliday
+  }
+
   const handleDateClick = (date: Date) => {
     setSelectedDate(date)
     setIsModalOpen(true)
@@ -193,7 +212,7 @@ export function CompanyAttendanceCalendar({ allAttendanceRecords, onDateSelect }
                   `}
                 >
                   <div className="flex flex-col items-center justify-center h-full p-1">
-                    <span className={`text-sm font-medium ${isTodayDate ? 'font-bold' : ''}`}>
+                    <span className={`text-sm font-medium ${isTodayDate ? 'font-bold' : ''} ${isCurrentMonthDay && isWeekendOrHoliday(date) ? 'text-red-500' : ''}`}>
                       {date.getDate()}
                     </span>
                     {dayAttendance.length > 0 && (

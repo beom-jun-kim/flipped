@@ -24,7 +24,7 @@ export default function WorkerWorkLogPage() {
   const [taskInput, setTaskInput] = useState("")
   const [tasks, setTasks] = useState<string[]>([])
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
-  const [workLogType, setWorkLogType] = useState<string>("일간")
+  const [workLogType, setWorkLogType] = useState<string>("일일")
 
   useEffect(() => {
     if (!user) {
@@ -118,7 +118,7 @@ export default function WorkerWorkLogPage() {
                     onChange={(e) => setWorkLogType(e.target.value)}
                     className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="일간">일간</option>
+                    <option value="일간">일일</option>
                     <option value="주간">주간</option>
                     <option value="월간">월간</option>
                   </select>

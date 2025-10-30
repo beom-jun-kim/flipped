@@ -12,24 +12,24 @@ interface Activity {
 const MOCK_ACTIVITIES: Activity[] = [
   {
     id: "1",
-    type: "attendance",
-    title: "출근 완료",
-    time: "오늘 09:00",
-    description: "정상 출근하였습니다",
-  },
-  {
-    id: "2",
     type: "task",
     title: "새로운 업무지시",
     time: "어제 16:30",
     description: "월간 보고서 작성 요청",
   },
   {
-    id: "3",
+    id: "2",
     type: "work-log",
     title: "업무일지 작성",
     time: "어제 18:00",
     description: "일일 업무 내용 기록 완료",
+  },
+  {
+    id: "3",
+    type: "attendance",
+    title: "출근 완료",
+    time: "오늘 09:00",
+    description: "정상 출근하였습니다",
   },
   {
     id: "4",
